@@ -1,19 +1,20 @@
 import { NextRequest } from 'next/server';
 import OpenAI from 'openai';
 
-// 禁用静态渲染，确保该路由始终以动态方式运行（SSE 必须为动态）
+// Force dynamic rendering (SSE requires dynamic routes)
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-// 复用 OpenAI SDK 调用 DeepSeek（兼容 OpenAI 接口）
+// Reuse OpenAI SDK to call the model API
 const client = new OpenAI({
   apiKey: process.env.DEEPSEEK_API_KEY ?? '',
   baseURL: 'https://api.deepseek.com/v1',
 });
 
-const SYSTEM_PROMPT = `你是一个简洁高效的 Mini AI Agent。
-请用清晰、结构化的方式回答用户的问题或完成用户交给你的任务。
-如果任务涉及多步骤，请分步骤说明。回答尽量精炼，避免冗长。`;
+const SYSTEM_PROMPT = `You are a concise and efficient Mini AI Agent.
+Answer the user's questions or complete their tasks in a clear, structured way.
+If a task requires multiple steps, explain them step by step.
+Keep responses brief and to the point.`;
 
 interface RequestBody {
   task?: string;
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
   try {
     body = (await req.json()) as RequestBody;
   } catch {
-    return new Response(JSON.stringify({ error: '请求体不是合法的 JSON' }), {
+    return new Response(JSON.stringify({ error: 'Request body is not valid JSON' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
 
   const task = body.task?.trim();
   if (!task) {
-    return new Response(JSON.stringify({ error: 'task 字段不能为空' }), {
+    return new Response(JSON.stringify({ error: 'task field is required' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -40,12 +41,12 @@ export async function POST(req: NextRequest) {
 
   if (!process.env.DEEPSEEK_API_KEY) {
     return new Response(
-      JSON.stringify({ error: '服务端未配置 DEEPSEEK_API_KEY' }),
+      JSON.stringify({ error: 'Server API key is not configured' }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 
-  // 创建 SSE 流
+  // Create SSE stream
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -72,17 +73,17 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        send('done', { message: '完成' });
+        send('done', { message: 'Complete' });
       } catch (err) {
         const message =
-          err instanceof Error ? err.message : '调用 DeepSeek 失败';
+          err instanceof Error ? err.message : 'Failed to generate response';
         send('error', { message });
       } finally {
         controller.close();
       }
     },
     cancel() {
-      // 客户端断开连接时由底层自动处理
+      // Handled automatically when client disconnects
     },
   });
 
