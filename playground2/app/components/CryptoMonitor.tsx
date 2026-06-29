@@ -66,8 +66,14 @@ function getSentCount(email: string): number {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     const store = raw ? JSON.parse(raw) : {};
-    return store[getTodayKey(email)] ?? 0;
-  } catch { return 0; }
+    const key = getTodayKey(email);
+    const count = store[key] ?? 0;
+    console.log('🔍 getSentCount:', email, 'key:', key, 'count:', count, 'store:', JSON.stringify(store));
+    return count;
+  } catch (e) {
+    console.error('getSentCount error:', e);
+    return 0;
+  }
 }
 
 function incrementSentCount(email: string) {
@@ -77,7 +83,10 @@ function incrementSentCount(email: string) {
     const key = getTodayKey(email);
     store[key] = (store[key] ?? 0) + 1;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
-  } catch {}
+    console.log('📝 incrementSentCount:', email, 'new count:', store[key]);
+  } catch (e) {
+    console.error('incrementSentCount error:', e);
+  }
 }
 
 function formatPrice(n: number) {
@@ -154,8 +163,8 @@ export default function CryptoMonitor() {
   const [singleError, setSingleError] = useState('');
 
   // Ratio alert form
-  const [baseCoin, setBaseCoin] = useState<CoinOption>(COINS[2]); // SOL
-  const [quoteCoin, setQuoteCoin] = useState<CoinOption>(COINS[1]); // ETH
+  const [baseCoin, setBaseCoin] = useState<CoinOption>(COINS[2]);
+  const [quoteCoin, setQuoteCoin] = useState<CoinOption>(COINS[1]);
   const [ratioCondition, setRatioCondition] = useState<Condition>('below');
   const [targetRatio, setTargetRatio] = useState('');
   const [ratioEmail, setRatioEmail] = useState('');
@@ -189,31 +198,47 @@ export default function CryptoMonitor() {
       setPrices((prev) => ({ ...prev, ...data }));
       setLastUpdated(new Date());
       checkAlerts(data);
-    } catch {}
+    } catch (e) {
+      console.error('fetchPrices error:', e);
+    }
   }, []); // eslint-disable-line
 
   // ── Send email helper ──────────────────────────────────────────────────
   const sendEmail = useCallback(async (alert: Alert, currentValue: number) => {
     const sentToday = getSentCount(alert.email);
+    console.log('📨 sendEmail called, sentToday:', sentToday, 'limit:', DAILY_EMAIL_LIMIT);
+
     if (sentToday >= DAILY_EMAIL_LIMIT) {
       addNotification(`⚠️ Daily email limit reached for ${alert.email} — page alert only`);
       return;
     }
+
     setSending(alert.id);
     try {
       const body = alert.type === 'single'
         ? { to: alert.email, coin: alert.coin, condition: alert.condition, targetPrice: alert.targetPrice, currentPrice: currentValue }
         : { to: alert.email, coin: `${alert.baseCoin}/${alert.quoteCoin}`, condition: alert.condition, targetPrice: alert.targetRatio, currentPrice: currentValue, isRatio: true };
 
-      await fetch('/api/send', {
+      console.log('📤 Calling /api/send with body:', JSON.stringify(body));
+
+      const res = await fetch('/api/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
-      incrementSentCount(alert.email);
-      const remaining = DAILY_EMAIL_LIMIT - sentToday - 1;
-      addNotification(`📧 Email sent to ${alert.email} (${remaining} left today)`);
-    } catch {
+
+      const result = await res.json();
+      console.log('📬 /api/send response:', res.status, JSON.stringify(result));
+
+      if (res.ok) {
+        incrementSentCount(alert.email);
+        const remaining = DAILY_EMAIL_LIMIT - sentToday - 1;
+        addNotification(`📧 Email sent to ${alert.email} (${remaining} left today)`);
+      } else {
+        addNotification(`⚠️ Email failed: ${result.error || 'unknown error'}`);
+      }
+    } catch (e) {
+      console.error('sendEmail fetch error:', e);
       addNotification(`⚠️ Email failed — page notification only`);
     } finally {
       setSending(null);
@@ -348,7 +373,7 @@ export default function CryptoMonitor() {
           <StatusDot active={isPolling} />
           {isPolling ? (
             <span className="text-violet-600">
-              Polling every 30s{lastUpdated && ` · ${lastUpdated.toLocaleTimeString()}`}
+              Polling every 60s{lastUpdated && ` · ${lastUpdated.toLocaleTimeString()}`}
             </span>
           ) : (
             <span className="text-gray-400">Idle — add an alert to start</span>
