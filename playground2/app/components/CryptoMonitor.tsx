@@ -363,6 +363,13 @@ export default function CryptoMonitor() {
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
+          <a
+            href="https://yayaagent.com/playground/"
+            className="text-gray-400 hover:text-violet-600 transition-colors text-sm flex items-center gap-1 mr-1"
+            aria-label="Back"
+          >
+            ← Back
+          </a>
           <span className="text-xl">📈</span>
           <div>
             <h1 className="text-sm font-semibold text-gray-900 tracking-wide">Crypto Price Monitor</h1>
