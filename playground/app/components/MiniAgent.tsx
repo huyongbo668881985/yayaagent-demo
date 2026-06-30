@@ -87,6 +87,7 @@ export default function MiniAgent() {
   const [loading, setLoading] = useState(false);
   const [thinkingOpen, setThinkingOpen] = useState(false);
   const [showEmptyState, setShowEmptyState] = useState(true);
+  const [examplesOpen, setExamplesOpen] = useState(false);
 
   const idRef = useRef(1);
   const abortRef = useRef<AbortController | null>(null);
@@ -132,6 +133,7 @@ export default function MiniAgent() {
     pushLine('user', text);
     setTask('');
     setLoading(true);
+    setExamplesOpen(false);
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -210,6 +212,7 @@ export default function MiniAgent() {
   const handleExampleClick = (prompt: string) => {
     setTask(prompt);
     setThinkingOpen(true);
+    setExamplesOpen(false);
   };
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -222,315 +225,225 @@ export default function MiniAgent() {
   const currentReasoning = getReasoningData(task);
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
-      {/* Navigation */}
-      <nav className="mb-8">
-        <a
-          href="https://yayaagent.com"
-          target="_self"
-          className="inline-flex items-center gap-1.5 text-sm text-slate-400 transition hover:text-indigo-500"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-          </svg>
-          Explore More Tools
-        </a>
-      </nav>
+    <div className="min-h-screen bg-gray-50 font-sans">
 
-      {/* Header Section */}
-      <header className="mb-8 text-center">
-        <div className="mb-4 inline-flex items-center justify-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-200">
-            <svg className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
-            </svg>
-          </div>
-          <h1 className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-3xl font-bold tracking-tight text-transparent sm:text-4xl">
-            Mini AI Agent
-          </h1>
-        </div>
-        <p className="mx-auto max-w-lg text-base text-slate-500">
-          Experience how AI agents think, plan, and respond to tasks.
-        </p>
-      </header>
-
-      {/* Demo Notice */}
-      <div className="mb-6 rounded-xl border border-indigo-100 bg-gradient-to-r from-indigo-50 to-purple-50 px-5 py-4">
-        <div className="flex items-start gap-3">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600">
-            <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-            </svg>
-          </div>
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <a
+            href="https://yayaagent.com/playground/"
+            className="text-gray-400 hover:text-violet-600 transition-colors text-sm flex items-center gap-1 mr-1"
+          >
+            ← Back
+          </a>
+          <span className="text-xl">🤖</span>
           <div>
-            <p className="text-sm font-semibold text-indigo-900">Demo Notice</p>
-            <p className="mt-0.5 text-sm leading-relaxed text-indigo-700">
-              This is a lightweight demonstration of agent behavior.
-              Real-world actions such as browser control, file operations, workflow execution, and tool usage require local deployment.
-            </p>
+            <h1 className="text-sm font-semibold text-gray-900 tracking-wide">Mini AI Agent</h1>
+            <p className="text-xs text-gray-400">Think · Plan · Execute</p>
           </div>
+        </div>
+        <div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5">
+          <svg className="h-3.5 w-3.5 text-violet-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+          </svg>
+          <span className="text-xs font-medium text-gray-700">Demo</span>
+          <span className="text-xs text-gray-400">3 req/day</span>
         </div>
       </div>
 
-      {/* Main Chat Card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-lg shadow-slate-200/60 ring-1 ring-slate-100 sm:p-6">
-        {/* Status Bar + Usage Limit */}
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-gradient-to-r from-indigo-400 to-purple-500" />
-            <span className="text-sm font-medium text-slate-500">Ready</span>
-          </div>
-          <div className="flex items-center gap-4">
-            {loading && (
-              <span className="flex items-center gap-2 text-xs text-slate-500">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-gradient-to-r from-indigo-400 to-purple-500" />
-                Generating...
-              </span>
-            )}
-            <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5">
-              <svg className="h-3.5 w-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
-              </svg>
-              <div className="text-xs">
-                <span className="font-medium text-slate-700">Demo Limit</span>
-                <span className="ml-1.5 text-slate-400">3 requests per day</span>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
 
-        {/* Chat Area */}
-        <div
-          ref={scrollRef}
-          className="h-80 overflow-auto rounded-xl border border-slate-200/80 bg-gradient-to-b from-slate-900 to-slate-800 p-4 text-sm leading-relaxed shadow-inner sm:h-96"
-          style={{ boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.3), 0 0 0 1px rgba(99,102,241,0.1)' }}
-        >
-          {lines.length === 0 && showEmptyState ? (
-            <div className="flex h-full flex-col items-center justify-center text-center">
-              <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5 ring-1 ring-white/10">
-                <svg
-                  className="h-7 w-7 text-indigo-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"
-                  />
-                </svg>
-              </div>
-              <p className="text-base font-medium text-white/80">
-                Welcome to Mini AI Agent.
-              </p>
-              <p className="mt-1 text-sm text-slate-400">
-                Enter a task and click Send to begin.
-              </p>
-            </div>
-          ) : (
-            lines.map((line) => (
-              <div
-                key={line.id}
-                className={`mb-3 ${
-                  line.kind === 'user'
-                    ? 'text-right'
-                    : line.kind === 'system'
-                    ? 'text-center'
-                    : ''
-                }`}
-              >
-                {line.kind === 'user' ? (
-                  <span className="inline-block rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-2 text-sm text-white shadow-lg shadow-indigo-500/20">
-                    {line.text}
-                  </span>
-                ) : line.kind === 'system' ? (
-                  <span className="text-xs text-slate-500">{line.text}</span>
-                ) : line.kind === 'error' ? (
-                  <div className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-300 ring-1 ring-red-500/20">
-                    {line.text}
-                  </div>
-                ) : (
-                  <div className="prose prose-sm max-w-none text-slate-200">
-                    {line.text}
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-          {loading && (
-            <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 animate-bounce rounded-full bg-indigo-400" style={{ animationDelay: '0ms' }} />
-              <span className="h-2 w-2 animate-bounce rounded-full bg-purple-400" style={{ animationDelay: '150ms' }} />
-              <span className="h-2 w-2 animate-bounce rounded-full bg-indigo-400" style={{ animationDelay: '300ms' }} />
-            </div>
-          )}
-        </div>
-
-        {/* Agent Reasoning Panel */}
-        {currentReasoning && (
-          <div className="mt-4">
-            <button
-              type="button"
-              onClick={() => setThinkingOpen(!thinkingOpen)}
-              className="flex w-full items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-left text-sm font-medium text-slate-700 transition-all hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
-            >
-              <div className="flex items-center gap-2">
-                <svg className={`h-4 w-4 text-indigo-400 transition-transform ${thinkingOpen ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25z" />
-                </svg>
-                <span>Show Agent Reasoning</span>
-              </div>
-              <svg
-                className={`h-4 w-4 transition-transform ${
-                  thinkingOpen ? 'rotate-180' : ''
-                }`}
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {thinkingOpen && (
-              <div className="mt-2 space-y-4 rounded-xl border border-indigo-100 bg-gradient-to-b from-indigo-50/50 to-white p-4 text-sm">
-                <div>
-                  <div className="mb-1 flex items-center gap-1.5">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-md bg-indigo-100 text-[10px] font-bold text-indigo-600">G</span>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-indigo-600">Goal</span>
-                  </div>
-                  <p className="ml-7 text-slate-700">{currentReasoning.goal}</p>
-                </div>
-                <div>
-                  <div className="mb-1 flex items-center gap-1.5">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-md bg-purple-100 text-[10px] font-bold text-purple-600">T</span>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-purple-600">Thinking</span>
-                  </div>
-                  <p className="ml-7 text-slate-700">{currentReasoning.thinking}</p>
-                </div>
-                <div>
-                  <div className="mb-1 flex items-center gap-1.5">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-md bg-blue-100 text-[10px] font-bold text-blue-600">P</span>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-blue-600">Planning</span>
-                  </div>
-                  <ol className="ml-7 list-inside list-decimal space-y-1 text-slate-700">
-                    {currentReasoning.plan.map((step, i) => (
-                      <li key={i}>{step}</li>
-                    ))}
-                  </ol>
-                </div>
-                <div>
-                  <div className="mb-1 flex items-center gap-1.5">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-md bg-amber-100 text-[10px] font-bold text-amber-600">E</span>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-amber-600">Execution</span>
-                  </div>
-                  <p className="ml-7 text-slate-700">{currentReasoning.execution}</p>
-                </div>
-                <div>
-                  <div className="mb-1 flex items-center gap-1.5">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-md bg-emerald-100 text-[10px] font-bold text-emerald-600">R</span>
-                    <span className="text-xs font-semibold uppercase tracking-wider text-emerald-600">Response</span>
-                  </div>
-                  <p className="ml-7 text-slate-700">{currentReasoning.response}</p>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Example Tasks Section */}
-        <div className="mt-6">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
-            Example Tasks
+        {/* Demo Notice */}
+        <div className="rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3">
+          <p className="text-xs leading-relaxed text-indigo-700">
+            <span className="font-semibold">Demo Notice —</span> This is a lightweight demonstration. Real-world actions (browser control, file ops, workflow execution) require local deployment.
           </p>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {EXAMPLE_PROMPTS.map((prompt) => (
-              <button
-                key={prompt}
-                type="button"
-                onClick={() => handleExampleClick(prompt)}
-                className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-left text-sm text-slate-600 shadow-sm transition-all hover:border-indigo-200 hover:bg-indigo-50/50 hover:text-indigo-700 hover:shadow-md"
-              >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-50 to-purple-50 group-hover:from-indigo-100 group-hover:to-purple-100">
-                  <svg className="h-4 w-4 text-indigo-400 group-hover:text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+        </div>
+
+        {/* Main Chat Card */}
+        <div className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+
+          {/* Status bar */}
+          <div className="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+            <div className="flex items-center gap-2">
+              <span className={`inline-block h-2 w-2 rounded-full ${loading ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}`} />
+              <span className="text-xs text-gray-500">{loading ? 'Generating…' : 'Ready'}</span>
+            </div>
+          </div>
+
+          {/* Chat Area */}
+          <div
+            ref={scrollRef}
+            className="h-72 sm:h-96 overflow-auto bg-gradient-to-b from-slate-900 to-slate-800 p-4 text-sm leading-relaxed"
+            style={{ boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.3)' }}
+          >
+            {lines.length === 0 && showEmptyState ? (
+              <div className="flex h-full flex-col items-center justify-center text-center">
+                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white/5 ring-1 ring-white/10">
+                  <svg className="h-6 w-6 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 00-2.455 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
                   </svg>
                 </div>
-                <span className="font-medium">{prompt}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Input Area */}
-        <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-          <textarea
-            value={task}
-            onChange={(e) => setTask(e.target.value)}
-            onKeyDown={onKeyDown}
-            rows={2}
-            placeholder="Describe a task for the agent..."
-            className="flex-1 resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition-all focus:border-indigo-300 focus:bg-white focus:ring-2 focus:ring-indigo-100"
-          />
-          <div className="flex gap-2 sm:flex-col">
-            <button
-              type="button"
-              onClick={() => void send()}
-              disabled={loading || !task.trim()}
-              className="flex-1 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-5 py-3 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all hover:from-indigo-600 hover:to-purple-700 hover:shadow-xl hover:shadow-indigo-500/30 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none sm:flex-none"
-            >
-              Send
-            </button>
+                <p className="text-sm font-medium text-white/80">Welcome to Mini AI Agent</p>
+                <p className="mt-1 text-xs text-slate-400">Enter a task below or pick an example to begin.</p>
+              </div>
+            ) : (
+              lines.map((line) => (
+                <div
+                  key={line.id}
+                  className={`mb-3 ${
+                    line.kind === 'user' ? 'text-right' : line.kind === 'system' ? 'text-center' : ''
+                  }`}
+                >
+                  {line.kind === 'user' ? (
+                    <span className="inline-block rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-2 text-sm text-white shadow-lg shadow-indigo-500/20">
+                      {line.text}
+                    </span>
+                  ) : line.kind === 'system' ? (
+                    <span className="text-xs text-slate-500">{line.text}</span>
+                  ) : line.kind === 'error' ? (
+                    <div className="rounded-xl bg-red-500/10 px-4 py-3 text-sm text-red-300 ring-1 ring-red-500/20">
+                      {line.text}
+                    </div>
+                  ) : (
+                    <div className="prose prose-sm max-w-none text-slate-200">{line.text}</div>
+                  )}
+                </div>
+              ))
+            )}
             {loading && (
-              <button
-                type="button"
-                onClick={stop}
-                className="flex-1 rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-700 shadow-sm transition-all hover:border-slate-400 hover:bg-slate-50 sm:flex-none"
-              >
-                Stop
-              </button>
+              <div className="flex items-center gap-1.5">
+                <span className="h-2 w-2 animate-bounce rounded-full bg-indigo-400" style={{ animationDelay: '0ms' }} />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-purple-400" style={{ animationDelay: '150ms' }} />
+                <span className="h-2 w-2 animate-bounce rounded-full bg-indigo-400" style={{ animationDelay: '300ms' }} />
+              </div>
             )}
           </div>
-        </div>
-      </div>
 
-      {/* Deploy Your Own AI Agent - CTA Section */}
-      <div className="mt-10 overflow-hidden rounded-2xl border border-indigo-100 bg-gradient-to-br from-white to-indigo-50/50 px-6 py-8 shadow-lg shadow-indigo-100/50 sm:px-8">
-        <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex-1">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-100 to-purple-100 px-3 py-1 text-xs font-semibold text-indigo-700">
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-              </svg>
-              Production Ready
+          {/* Agent Reasoning Panel */}
+          {currentReasoning && (
+            <div className="border-t border-gray-100 px-4 py-3">
+              <button
+                type="button"
+                onClick={() => setThinkingOpen(!thinkingOpen)}
+                className="flex w-full items-center justify-between rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-xs font-medium text-slate-700 transition-all hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700"
+              >
+                <div className="flex items-center gap-2">
+                  <svg className={`h-3.5 w-3.5 text-indigo-400 transition-transform ${thinkingOpen ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25z" />
+                  </svg>
+                  <span>Show Agent Reasoning</span>
+                </div>
+                <svg className={`h-3.5 w-3.5 transition-transform ${thinkingOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {thinkingOpen && (
+                <div className="mt-2 space-y-3 rounded-lg border border-indigo-100 bg-indigo-50/50 p-3 text-xs">
+                  {[
+                    { label: 'Goal', color: 'indigo', content: currentReasoning.goal },
+                    { label: 'Thinking', color: 'purple', content: currentReasoning.thinking },
+                    { label: 'Execution', color: 'amber', content: currentReasoning.execution },
+                    { label: 'Response', color: 'emerald', content: currentReasoning.response },
+                  ].map(({ label, color, content }) => (
+                    <div key={label}>
+                      <span className={`text-[10px] font-bold uppercase tracking-wider text-${color}-600`}>{label}</span>
+                      <p className="mt-0.5 text-slate-600">{content}</p>
+                    </div>
+                  ))}
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600">Plan</span>
+                    <ol className="mt-0.5 list-inside list-decimal space-y-0.5 text-slate-600">
+                      {currentReasoning.plan.map((step, i) => <li key={i}>{step}</li>)}
+                    </ol>
+                  </div>
+                </div>
+              )}
             </div>
-            <h3 className="text-xl font-bold text-slate-900 sm:text-2xl">
-              Deploy Your Own AI Agent
-            </h3>
-            <p className="mt-2 max-w-lg text-sm leading-relaxed text-slate-500">
-              Run AI agents on your own computer or server with advanced capabilities including browser automation, file operations, workflow execution, and tool integration.
-            </p>
+          )}
+
+          {/* Input Area */}
+          <div className="border-t border-gray-100 p-4 space-y-3">
+
+            {/* Example Tasks — collapsible */}
+            <div>
+              <button
+                type="button"
+                onClick={() => setExamplesOpen(!examplesOpen)}
+                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-violet-600 transition-colors"
+              >
+                <svg className={`h-3 w-3 transition-transform ${examplesOpen ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+                Example tasks
+              </button>
+              {examplesOpen && (
+                <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                  {EXAMPLE_PROMPTS.map((prompt) => (
+                    <button
+                      key={prompt}
+                      type="button"
+                      onClick={() => handleExampleClick(prompt)}
+                      className="group flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-left text-xs text-gray-600 transition-all hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+                    >
+                      <svg className="h-3.5 w-3.5 shrink-0 text-gray-400 group-hover:text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                      </svg>
+                      <span className="font-medium">{prompt}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Textarea + buttons */}
+            <div className="flex gap-2">
+              <textarea
+                value={task}
+                onChange={(e) => setTask(e.target.value)}
+                onKeyDown={onKeyDown}
+                rows={2}
+                placeholder="Describe a task for the agent…"
+                className="flex-1 resize-none rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-800 outline-none transition-all focus:border-violet-300 focus:bg-white focus:ring-2 focus:ring-violet-100"
+              />
+              <div className="flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={() => void send()}
+                  disabled={loading || !task.trim()}
+                  className="rounded-xl bg-violet-600 hover:bg-violet-500 px-4 py-2 text-sm font-semibold text-white transition-all disabled:cursor-not-allowed disabled:opacity-40 flex-1"
+                >
+                  Send
+                </button>
+                {loading && (
+                  <button
+                    type="button"
+                    onClick={stop}
+                    className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-all"
+                  >
+                    Stop
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
+        </div>
+
+        {/* Deploy CTA */}
+        <div className="border border-dashed border-gray-200 rounded-xl p-5 text-center">
+          <p className="text-sm text-gray-500 font-semibold mb-1">Deploy Your Own AI Agent</p>
+          <p className="text-xs text-gray-400 mb-3">Run agents with browser control, file ops, and tool integration on your own server.</p>
           <a
-            href="/guide/deploy-agent"
-            className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-indigo-500/20 transition-all hover:from-indigo-600 hover:to-purple-700 hover:shadow-xl hover:shadow-indigo-500/30"
+            href="https://yayaagent.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs font-semibold text-violet-600 hover:text-violet-500 transition-colors"
           >
-            Installation Guide
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-            </svg>
+            Learn how on YayaAgent.com →
           </a>
         </div>
-      </div>
 
-      {/* Footer Note */}
-      <footer className="mt-10 text-center">
-        <p className="text-xs text-slate-400">
-          Mini AI Agent is part of the YayaAgent learning ecosystem.
-        </p>
-      </footer>
+      </div>
     </div>
   );
 }
