@@ -2,8 +2,20 @@
 
 import { useState } from 'react';
 
-const DAILY_LIMIT = 5;
+const DAILY_LIMIT = 3;
 const STORAGE_KEY = 'news_digest_sends';
+const GHOST_API = 'https://yayaagent.com/members/api/send-magic-link/';
+
+async function subscribeToGhost(email: string): Promise<boolean> {
+  try {
+    const res = await fetch(GHOST_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, emailType: 'subscribe' }),
+    });
+    return res.ok;
+  } catch { return false; }
+}
 
 function getTodayKey(email: string) {
   const today = new Date().toISOString().slice(0, 10);
@@ -86,6 +98,8 @@ export default function NewsDigest() {
   const [error, setError] = useState('');
   const [formError, setFormError] = useState('');
   const [done, setDone] = useState(false);
+  const [showSubscribe, setShowSubscribe] = useState(false);
+  const [subscribeStatus, setSubscribeStatus] = useState<'idle'|'loading'|'done'|'error'>('idle');
 
   function updateStep(id: string, status: StepStatus, detail?: string) {
     setSteps(prev => prev.map(s =>
@@ -190,6 +204,15 @@ export default function NewsDigest() {
     setResult(null);
     setError('');
     setDone(false);
+    setShowSubscribe(false);
+    setSubscribeStatus('idle');
+  }
+
+  async function handleSubscribe() {
+    if (!email.includes('@')) return;
+    setSubscribeStatus('loading');
+    const ok = await subscribeToGhost(email);
+    setSubscribeStatus(ok ? 'done' : 'error');
   }
 
   const EXAMPLE_TOPICS = ['AI Agents', 'Bitcoin', 'OpenAI', 'n8n automation', 'Solana DeFi'];
@@ -321,6 +344,41 @@ export default function NewsDigest() {
             >
               Run another digest →
             </button>
+          </div>
+        )}
+
+        {/* Subscribe Banner */}
+        {showSubscribe && subscribeStatus !== 'done' && (
+          <div className="bg-violet-50 border border-violet-200 rounded-xl p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-violet-800 mb-1">📬 Stay updated</p>
+                <p className="text-xs text-violet-600 mb-3">Subscribe to YayaAgent newsletter for the latest AI tools and automation tutorials.</p>
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    readOnly
+                    className="flex-1 bg-white border border-violet-200 rounded-lg px-3 py-1.5 text-xs text-gray-500 focus:outline-none"
+                  />
+                  <button
+                    onClick={handleSubscribe}
+                    disabled={subscribeStatus === 'loading'}
+                    className="bg-violet-600 hover:bg-violet-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {subscribeStatus === 'loading' ? 'Sending…' : 'Subscribe'}
+                  </button>
+                </div>
+                {subscribeStatus === 'error' && <p className="text-xs text-red-500 mt-1">Failed, please try again.</p>}
+              </div>
+              <button onClick={() => setShowSubscribe(false)} className="text-violet-300 hover:text-violet-500 text-lg leading-none shrink-0">×</button>
+            </div>
+          </div>
+        )}
+        {showSubscribe && subscribeStatus === 'done' && (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-center justify-between">
+            <p className="text-sm text-emerald-700">✅ Check your inbox to confirm your subscription!</p>
+            <button onClick={() => setShowSubscribe(false)} className="text-emerald-300 hover:text-emerald-500 text-lg leading-none">×</button>
           </div>
         )}
 
