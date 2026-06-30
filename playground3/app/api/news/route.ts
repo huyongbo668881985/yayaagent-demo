@@ -141,9 +141,7 @@ Write clearly and objectively. Focus on facts, trends, and implications.`;
           .replace(/^## (.+)$/gm, '<h2 style="font-size:18px;font-weight:700;color:#ffffff;margin:0 0 16px">$1</h2>')
           .replace(/^\*\*(.+)\*\*$/gm, '<p style="font-size:13px;font-weight:700;color:#a78bfa;margin:16px 0 8px;text-transform:uppercase;letter-spacing:0.05em">$1</p>')
           .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-          .replace(/^- (.+)$/gm, '<li style="margin-bottom:6px">$1</li>')
-          .replace(/(<li.*<\/li>)/s, '<ul style="padding-left:20px;color:#d1d5db">$1</ul>')
-          .replace(/\[(\d+)\] (.+)\nhttps?:\/\/\S+/g, '')
+          .replace(/^- (.+)$/gm, '<li style="margin-bottom:6px;color:#d1d5db">$1</li>')
           .replace(/\n\n/g, '</p><p style="color:#d1d5db;font-size:14px;line-height:1.7;margin:0 0 12px">')
           .replace(/\n/g, '<br/>');
 
