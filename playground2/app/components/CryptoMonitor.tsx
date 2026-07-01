@@ -68,6 +68,23 @@ async function subscribeToGhost(email: string): Promise<boolean> {
   } catch { return false; }
 }
 
+function isSubscribed(email: string): boolean {
+  try {
+    const raw = localStorage.getItem('ghost_subscribed');
+    const list: string[] = raw ? JSON.parse(raw) : [];
+    return list.includes(email);
+  } catch { return false; }
+}
+
+function markSubscribed(email: string) {
+  try {
+    const raw = localStorage.getItem('ghost_subscribed');
+    const list: string[] = raw ? JSON.parse(raw) : [];
+    if (!list.includes(email)) list.push(email);
+    localStorage.setItem('ghost_subscribed', JSON.stringify(list));
+  } catch {}
+}
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 function getTodayKey(email: string) {
   const today = new Date().toISOString().slice(0, 10);
@@ -193,6 +210,7 @@ export default function CryptoMonitor() {
     if (!subscribeEmail.includes('@')) return;
     setSubscribeStatus('loading');
     const ok = await subscribeToGhost(subscribeEmail);
+    if (ok) markSubscribed(subscribeEmail);
     setSubscribeStatus(ok ? 'done' : 'error');
   }
 
@@ -349,7 +367,7 @@ export default function CryptoMonitor() {
     setAlerts((prev) => [...prev, a]);
     setTargetPrice('');
     addNotification(`✅ Watching ${selectedCoin.symbol} ${singleCondition} $${formatPrice(price)}`);
-    if (!showSubscribe) { setSubscribeEmail(singleEmail); setShowSubscribe(true); }
+    if (!showSubscribe && !isSubscribed(singleEmail)) { setSubscribeEmail(singleEmail); setShowSubscribe(true); }
   }
 
   // ── Form: ratio alert ──────────────────────────────────────────────────
@@ -371,7 +389,7 @@ export default function CryptoMonitor() {
     setAlerts((prev) => [...prev, a]);
     setTargetRatio('');
     addNotification(`✅ Watching ${baseCoin.symbol}/${quoteCoin.symbol} ${ratioCondition} ${formatRatio(ratio)}`);
-    if (!showSubscribe) { setSubscribeEmail(ratioEmail); setShowSubscribe(true); }
+    if (!showSubscribe && !isSubscribed(ratioEmail)) { setSubscribeEmail(ratioEmail); setShowSubscribe(true); }
   }
 
   function removeAlert(id: string) {
