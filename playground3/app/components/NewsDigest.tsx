@@ -70,7 +70,7 @@ const INITIAL_STEPS: Step[] = [
   { id: 'receive',  label: 'Receive topic',        detail: 'Parsing your request…',              status: 'idle' },
   { id: 'search',   label: 'Search news',           detail: 'Querying Tavily for top stories…',   status: 'idle' },
   { id: 'fetch',    label: 'Fetch article content', detail: 'Extracting full article text…',      status: 'idle' },
-  { id: 'summarize',label: 'AI summarization',      detail: 'Gemini 2.5 Flash analyzing content…',status: 'idle' },
+  { id: 'summarize',label: 'AI summarization',      detail: 'AI model analyzing content…',status: 'idle' },
   { id: 'send',     label: 'Send to email',         detail: 'Delivering digest via Resend…',      status: 'idle' },
 ];
 
@@ -339,17 +339,6 @@ export default function NewsDigest() {
           </div>
         )}
 
-        {/* Result preview */}
-        {result && (
-          <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-              Digest Preview
-            </h2>
-            <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">
-              {result}
-            </div>
-          </div>
-        )}
 
         {/* Done state */}
         {done && (
