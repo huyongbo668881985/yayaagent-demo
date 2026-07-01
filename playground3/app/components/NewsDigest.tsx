@@ -17,6 +17,23 @@ async function subscribeToGhost(email: string): Promise<boolean> {
   } catch { return false; }
 }
 
+function isSubscribed(email: string): boolean {
+  try {
+    const raw = localStorage.getItem('ghost_subscribed');
+    const list: string[] = raw ? JSON.parse(raw) : [];
+    return list.includes(email);
+  } catch { return false; }
+}
+
+function markSubscribed(email: string) {
+  try {
+    const raw = localStorage.getItem('ghost_subscribed');
+    const list: string[] = raw ? JSON.parse(raw) : [];
+    if (!list.includes(email)) list.push(email);
+    localStorage.setItem('ghost_subscribed', JSON.stringify(list));
+  } catch {}
+}
+
 function getTodayKey(email: string) {
   const today = new Date().toISOString().slice(0, 10);
   return `${email}__${today}`;
@@ -182,6 +199,7 @@ export default function NewsDigest() {
               const remaining = DAILY_LIMIT - used - 1;
               updateStep('send', 'done', `Sent to ${email} (${remaining} left today)`);
               setDone(true);
+              if (!isSubscribed(email)) setShowSubscribe(true);
             } else if (event === 'error') {
               setError(payload.message);
               // mark current running step as error
@@ -212,6 +230,7 @@ export default function NewsDigest() {
     if (!email.includes('@')) return;
     setSubscribeStatus('loading');
     const ok = await subscribeToGhost(email);
+    if (ok) markSubscribed(email);
     setSubscribeStatus(ok ? 'done' : 'error');
   }
 
